@@ -2,15 +2,17 @@
 <html>
 <head>
   <title>FCM Notification Demo</title>
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <h1>Notification Demo</h1>
   <button id="notifyBtn">Enable Notifications</button>
 
   <script>
-    // Firebase configuration
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDcrc_-bE-q2P8yLlD7OzkUndhNbnPoPlo",
       authDomain: "demothing-7cde7.firebaseapp.com",
@@ -23,8 +25,8 @@
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
     const messaging = firebase.messaging();
+    const database = firebase.database();
 
     document.getElementById('notifyBtn').addEventListener('click', async () => {
       try {
@@ -33,13 +35,22 @@
           const token = await messaging.getToken({
             vapidKey: 'BC6gY6q3_mJOKaOy3YJmCCaC94qd3afi0j2XCmoylM5hpEUyLNOKa5kCfpyjFPdsTO-Sgak88eqhvJSX4k1Kxt4'
           });
-          console.log("FCM Token:", token);
-          // You can send this token to your backend server for later use
+
+          console.log('FCM Token:', token);
+
+          // Save token to Realtime Database
+          await database.ref('fcmTokens').push({
+            token,
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent
+          });
+
+          alert('Notification permission granted and token saved!');
         } else {
-          console.warn("Notification permission denied");
+          console.warn('Notification permission denied');
         }
       } catch (err) {
-        console.error("Error getting FCM token:", err);
+        console.error('Error getting permission or token:', err);
       }
     });
   </script>
